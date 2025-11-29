@@ -11,3 +11,14 @@ spring:
 
     # 3. 드라이버 클래스 이름 (생략해도 되지만 명시하는 게 좋다요)
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    stream:
+      host: localhost
+      port: 5552  # Stream 포트
+      username: guest
+      password: guest

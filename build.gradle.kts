@@ -73,6 +73,11 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	implementation ("org.springframework.boot:spring-boot-starter-websocket")
+	implementation ("org.springframework.boot:spring-boot-starter-amqp")
+	implementation("com.rabbitmq:stream-client:0.15.0")
+	implementation("org.springframework.amqp:spring-rabbit-stream:3.0.0")
+	implementation("io.projectreactor.netty:reactor-netty")
 }
 
 kotlin {
