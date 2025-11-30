@@ -5,6 +5,7 @@ import jakarta.annotation.PostConstruct
 import org.springframework.amqp.core.BindingBuilder
 import org.springframework.amqp.core.FanoutExchange
 import org.springframework.amqp.core.Queue
+import org.springframework.amqp.core.QueueBuilder
 import org.springframework.amqp.rabbit.core.RabbitAdmin
 import org.springframework.stereotype.Service
 
@@ -16,14 +17,23 @@ class RabbitMqManager(private val rabbitAdmin: RabbitAdmin) {
 
     //@PostConstruct
     fun createMasterParts(){
-        val masterQueue=Queue("masterQueue",false,false,false)
+        var masterQueue=QueueBuilder.nonDurable("masterQueue")
+            .maxLength(10000)
+            //overflow에는 에러 발생시 그냥 drop하는 dropehad,producer에게 에러를 돌려주는-->returns callback 작동하게
+            //하는 rejectpublish, dlx에게 넘기는 옵션 이렇게 3개가존재
+            .overflow(QueueBuilder.Overflow.rejectPublish)
+            //.deadLetterExchange("DLX")-->이옵션은 에러 발생시->큐의 갯수 보다 많은 메시지가 들어오면 dlx로 전송하는 옵션.
+            .maxLengthBytes(10000)
+            .build();
+
+        masterQueue=Queue("masterQueue",false,false,false)
         val masterExchnage=FanoutExchange("masterExchange",false,false)
         rabbitAdmin.declareQueue(masterQueue)
         rabbitAdmin.declareExchange(masterExchnage)
         createMasterBinding(masterQueue.name,masterExchnage.name)
     }
 
-    //exchage든 queue든간에 같은 이름에 같은속성이면 멱등성 즉 중복된게 생성이안된다-->속성은 durable,exculsive,autodel등을 말함.
+    //exchage든 queue든간에 같은 이름에 같은속성이면 멱등성 즉 중복된게 생성이안된다-->속성은 durable,exculsive,autodel 외에 propertis 로 들어가는 ttl같은 속성을 말함.
     //durable-->브로커 재시작시에도 유지가 되는가를 말함. 즉 서버껏다 켜도 다시 실행되는가.exculsive가 애보단 우선권이있는지라
     //excusive가 켜진 상황에서 durable이고 연결이 종료되면 걍삭제된다.
     //auto delete--> 컨슈머가 모두 연결이 종료되면 연결이끊키는가,exchange의 경우에는 binding 모두 사라지면 자동으로 삭제되는가를의미.

@@ -112,8 +112,9 @@ class RabbitMqConsumerManager(private val customRecover: CustomRecover,private v
     fun retryOperationInterceptor():RetryOperationsInterceptor{
         //stateless-> 메세지가 실패하면 리스너르 실행하는 스레드는 정지,계속해서 해당 메시지에 대해서 정해진 횟수만큼 retry를 시도
         //stateful-->메시지 실패시 다시 큐에 집어넣고 해당 메모리에대한 retry횟수를 기록해둠.
-        //애는 인터셉터라서 소비자가 소비시에 발생한 에러를 애가 인터셉터를 해감.-->그걸 정해진 횟수만큼 실행하고 만약 그리했는대도
+        //애는 인터셉터라서 소비자가 소비도중 발생한 애플리케이션 에러를 애가 인터셉터를 해감.-->그걸 정해진 횟수만큼 실행하고 만약 그리했는대도
         //에러가 발생시 recoverer에 넘긴다. 그럼 recoverer에서 처리함. 메시지는 ack처리됨.
+        //본래 대로라면 에러 발생시 큐에 다시 넘겨서 해결될때까지 무한 반복 처리임.
         return RetryInterceptorBuilder.stateless()
             .retryPolicy(SimpleRetryPolicy(3))
             .recoverer(customRecover)

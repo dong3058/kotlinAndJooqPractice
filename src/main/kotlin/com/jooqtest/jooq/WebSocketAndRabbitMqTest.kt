@@ -24,6 +24,11 @@ class WebSocketAndRabbitMqTest(private val rabbitMqStreamService: RabbitMqStream
         rabbitTemplate.convertAndSend("masterExchange","",masterOrder)
     }
 
+    @MessageMapping("/testSending")
+    fun testingSendMsg2(@Payload testMsgClass: TestMsgClass){
+        rabbitTemplate.convertAndSend("nonExistExchange","",testMsgClass)
+    }
+
     @MessageMapping("/sending")
     fun testingSendMsg(@Payload testMsgClass: TestMsgClass){
         rabbitTemplate.convertAndSend("testExchange","",testMsgClass)
