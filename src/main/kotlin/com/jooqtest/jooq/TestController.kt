@@ -22,6 +22,7 @@ class TestController(private val rabbitMqStreamService: RabbitMqStreamService,pr
         rabbitMqManager.createQueue("testQueue")
         rabbitMqManager.createExchange("testExchange")
         rabbitMqManager.createBinding("testQueue","testExchange")
+        rabbitMqConsumerManager.createConsumer("testQueue")
     }
 
 }

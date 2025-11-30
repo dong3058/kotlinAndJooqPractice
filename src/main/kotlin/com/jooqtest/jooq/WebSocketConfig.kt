@@ -39,5 +39,9 @@ class WebSocketConfig : WebSocketMessageBrokerConfigurer {
             .setClientLogin(USERNAME)
             .setClientPasscode(PASSWORD);
         registry.setApplicationDestinationPrefixes("/app")
+
+        //val properties= mapOf("x-message-ttl" to 300000,"x-single-active-consumer" to true)
+        //참고사항으로 rabbit mq를 외부 메시지 브로커로 사용해서 구독시에 만약 해당 큐가 이미 존재가고 저런 위의 properties
+        //설정을 지닌다면 subscribe헤더에 저옵션들을 같이 넣어줘야된다.
     }
 }
