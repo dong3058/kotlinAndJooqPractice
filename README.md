@@ -12,4 +12,7 @@ channel: connection이라는 물리적 연결안에 존재한느 논리적 존�
 connection에 할당된 리소스에서 channel이라는 논리적 연결기반을 구현하고 이를 바탕으로 데이터를 주고받는다고 보면된다.
 producer쪽 connection문제로 consumer쪽이 뻗는걸 막기위해서 2개의 connection으로 분리한다.
 차피 queue,exchange,binbding은 rabbitmq 내부에 존재하는 데이터이므로 connection이 분리되어있어도 각 연결이 가지는 계정,vhost가 접근 가능하다면 
-둘다 같은 애드을 사용할수있다.
+둘다 같은 애들을 사용할수있다.
+
+rabbitmq port:webscoket config 에서 외부 브로커로써 rabbitmq와 연갈하는 포트와 rabbittemplate가 rabbit mq와 연결하는 포트 번호는 다르다,
+
