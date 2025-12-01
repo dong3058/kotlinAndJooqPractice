@@ -4,13 +4,16 @@ import com.jooqtest.jooq.mq.MasterOrder
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
+import org.springframework.messaging.simp.SimpMessagingTemplate
+import org.springframework.retry.support.RetryTemplate
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 
 
 @Controller
-class WebSocketAndRabbitMqTest(private val rabbitMqStreamService: RabbitMqStreamService,private val rabbitTemplate: RabbitTemplate) {
+class WebSocketAndRabbitMqTest(private val rabbitMqStreamService: RabbitMqStreamService
+,private val rabbitTemplate: RabbitTemplate,private val simpMessageTemplate: SimpMessagingTemplate) {
 
     @MessageMapping("/test")
     fun testingRabbitMqWithSocket(@Payload testMsgClass: TestMsgClass){
@@ -31,7 +34,20 @@ class WebSocketAndRabbitMqTest(private val rabbitMqStreamService: RabbitMqStream
 
     @MessageMapping("/sending")
     fun testingSendMsg(@Payload testMsgClass: TestMsgClass){
-        rabbitTemplate.convertAndSend("testExchange","",testMsgClass)
+
+            //simpMessageTemplate.convertAndSend("/queue/testQueue",testMsgClass);
+            rabbitTemplate.convertAndSend("testExchange", "", testMsgClass){
+                throw RuntimeException("테스트용 강제 에러 발생!")
+            }
+
+    }
+
+    fun testingRetryTemplate(){
+        val testMsgClass=TestMsgClass("hello world")
+        //simpMessageTemplate.convertAndSend("/queue/testQueue",testMsgClass);
+        rabbitTemplate.convertAndSend("testExchange", "", testMsgClass){
+            throw RuntimeException("테스트용 강제 에러 발생!")
+        }
     }
 
 

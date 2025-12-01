@@ -16,3 +16,8 @@ producer쪽 connection문제로 consumer쪽이 뻗는걸 막기위해서 2개의
 
 rabbitmq port:webscoket config 에서 외부 브로커로써 rabbitmq와 연갈하는 포트와 rabbittemplate가 rabbit mq와 연결하는 포트 번호는 다르다,
 
+rabbitmq를 외부브로커로 사용: 기존의 인메모리 브로커가아니라 rabbitmq를 외부의 메시지 브로커로 사용시 스프링의 메모리가 아닌 rabbit mq의
+메시지 브로커를 이용하게된다. 이때 보통의 rabbit mq 포트가 아니라 stomp 통신을 위한 61613(맞나?)라는 포트로 연결 하게된다.
+해당 포트로 연결이되면 simpmessagetemplate로 구독경로로 보낼시 자동으로 해당 큐를타고 구독한 클라이언트에게 메시지를 뿌린다.
+rabbittemplate(일반 rabbit port하고 연결한)로 메시지를 보내도 알아서 큐를 찾은후 해당 큐에대해서 subcribe가 된애들이 있으면 그쪽으로
+메시지를 알아서 뿌린다.

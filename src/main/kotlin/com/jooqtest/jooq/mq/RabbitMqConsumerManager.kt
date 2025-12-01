@@ -9,6 +9,7 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer
 import org.springframework.amqp.rabbit.retry.MessageRecoverer
 import org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.retry.RetryOperations
@@ -22,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 
 @Service
-class RabbitMqConsumerManager(private val customRecover: CustomRecover,private val connectionFactory: ConnectionFactory,private val rabbitMqManager: RabbitMqManager,private val simpMessagingTemplate:SimpMessagingTemplate
+class RabbitMqConsumerManager(private val customRecover: CustomRecover,@Qualifier("consumerConnectionFactory" )private val connectionFactory: ConnectionFactory,private val rabbitMqManager: RabbitMqManager,private val simpMessagingTemplate:SimpMessagingTemplate
 ,private val objectMapper:ObjectMapper) {
 
     private val connectionManagerMap: ConcurrentHashMap<String, SimpleMessageListenerContainer> = ConcurrentHashMap()

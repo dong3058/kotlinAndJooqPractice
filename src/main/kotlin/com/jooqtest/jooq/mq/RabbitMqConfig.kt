@@ -9,10 +9,17 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.retry.RetryCallback
+import org.springframework.retry.RetryListener
+import org.springframework.retry.RetryPolicy
+import org.springframework.retry.policy.SimpleRetryPolicy
+import org.springframework.retry.support.RetryTemplate
+import org.springframework.retry.support.RetryTemplateBuilder
+import redis.clients.authentication.core.TokenManagerConfig
 
 
 @Configuration
-class RabbitMqConfig {
+class RabbitMqConfig(private val customListener: CustomListener) {
 
 
     @Value("\${spring.rabbitmq.host}")
@@ -32,10 +39,17 @@ class RabbitMqConfig {
         connectionFactory.username = USERNAME
         connectionFactory.setRequestedHeartBeat(30)
         connectionFactory.setConnectionLimit(5000)
-
         //아래 2개의 설정은 각각 confirm 하고 returns 콜백의 활성화 여부를 결정하는 옵션.
         connectionFactory.setPublisherConfirmType(CachingConnectionFactory.ConfirmType.CORRELATED)
         connectionFactory.setPublisherReturns(true)
+        return connectionFactory
+    }
+    @Bean("consumerConnectionFactory")
+    fun consumerConnectionFactory(): ConnectionFactory {
+        val connectionFactory = CachingConnectionFactory(HOSTNAME, PORT)
+        connectionFactory.username = USERNAME
+        connectionFactory.setRequestedHeartBeat(30)
+        connectionFactory.setConnectionLimit(5000)
         return connectionFactory
     }
     @Bean
@@ -84,13 +98,20 @@ class RabbitMqConfig {
                 println("메시지 전송 성공")
             }
             else{
-                println("confirm callback 에러 원인:${cause}")
+                println("confirm callback 에러 원인:${cause}\n")
             }
         }
         rabbitTemplate.setReturnsCallback { returned->
-            println("returns callback 원인:${returned.message.body}")
-            println("returns call back 사유:${returned.replyText}")
+            println("returns callback 원인:${returned.message.body}\n")
+            println("returns call back 사유:${returned.replyText}\n")
         }
+        val retryTemplate=RetryTemplate()
+        retryTemplate.setRetryPolicy(SimpleRetryPolicy(3))
+        retryTemplate.setListeners(arrayOf(customListener))
+        rabbitTemplate.setRetryTemplate(retryTemplate)
+        rabbitTemplate.setRecoveryCallback { context->
+            print("retry 실패해서 에러로그 남기기${context.lastThrowable}\n") }
+        //retryTemplate와 customListenenr들은producer에대한 설정이다.
         return rabbitTemplate
     }
 }
