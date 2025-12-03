@@ -1,14 +1,19 @@
 package com.jooqtest.jooq
 
-import com.jooqtest.jooq.tables.records.UsersRecord
+import com.jooqtest.jooq.tables.references.USERINFO
 import com.jooqtest.jooq.tables.references.USERS
-import org.assertj.core.api.Assertions
+import com.jooqtest.jooq.testDto.UserCount
+import com.jooqtest.jooq.testDto.UserData
+import com.jooqtest.jooq.testDto.UserDto
+import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.impl.DSL.*
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
+import java.time.LocalDateTime
 
 @SpringBootTest
 class JooqApplicationTests {
@@ -16,19 +21,124 @@ class JooqApplicationTests {
 
 
 	@Autowired
-	lateinit var websocketAndRabbitMqTest: WebSocketAndRabbitMqTest;
-
-	@Autowired
 	lateinit var dslContext:DSLContext;
+
+
+	//@BeforeEach
+	fun setting(){
+		val query=dslContext.insertInto(USERS)
+			.set(USERS.AGE,12)
+			.set(USERS.USERNAME,"황동근")
+			.set(USERS.CREATED_AT,LocalDateTime.now())
+			.set(USERS.EMAIL,"dong.3058@daum.net")
+			.returningResult(USERS.ID)
+			.fetchOneInto(Long::class.java)
+		val query2=dslContext.insertInto(USERS)
+			.set(USERS.AGE,13)
+			.set(USERS.USERNAME,"알")
+			.set(USERS.CREATED_AT,LocalDateTime.now())
+			.set(USERS.EMAIL,"hwangdonggeun70@gmail.com")
+			.returningResult(USERS.ID)
+			.fetchOneInto(Long::class.java)
+		val query3=dslContext.insertInto(USERINFO,USERINFO.SEX,USERINFO.USERID).values("남자",query)
+		val query4=dslContext.insertInto(USERINFO,USERINFO.SEX,USERINFO.USERID).values("여자",query2)
+		dslContext.batch(query3,query4).execute();
+	}
+
+	//@AfterEach
+	fun clearAfterTest(){
+		dslContext.deleteFrom(USERINFO).execute();
+		dslContext.deleteFrom(USERS).execute();
+	}
+
 	@Test
 	fun contextLoads() {
 
-	 var data=dslContext.selectFrom(USERS).fetch();
-		Assertions.assertThat(data.isNotEmpty).isTrue();
+		val query=dslContext.insertInto(USERS,USERS.AGE,USERS.USERNAME,USERS.EMAIL).values(12,"황동근","dong.3058@daum.net");
+		val query2=dslContext.insertInto(USERS,USERS.AGE,USERS.USERNAME,USERS.EMAIL,USERS.CREATED_AT).values(13,"알","hwnagdonggeun70@gmail.com",
+			LocalDateTime.now());
+	 	dslContext.batch(query,query2).execute();
+	}
+
+	@Test
+	fun testingSelect(){
+		val data=dslContext.selectFrom(USERS).fetch()
+		System.out.println("데이터 타입:${data.javaClass}")
+		println("총갯수:${data.size}\n")
+		data.stream().forEach { x->
+			println("id값:${x.id}\n")
+			println("나이 값:${x.age}\n")
+			println("이름 값:${x.username}\n")
+			println("이메일 값:${x.email}\n")
+		 }
 	}
 	@Test
-	fun retryTemplateTest(){
-		websocketAndRabbitMqTest.testingRetryTemplate()
+	fun testingStaticProcess() {
+		//dto 매핑시에 순서는 상관없고 이름,데이터 타입만 맞춰추면됨.
+		//as로 이름 변동시엔 이름이 같아야되고 보통의 경우 카멜케이스가 아니라 그냥 소문자로 지어주면된다.
+ 		val data = dslContext.select(USERS.USERNAME, USERS.AGE).from(USERS)
+			.where(USERS.AGE.eq(12)).fetchInto(UserDto::class.java);
+		data.stream().forEach { x -> println("데이터:${x.age}-${x.username}") }
+
+		val data2 = dslContext.select(count()).from(USERS).fetch()
+		data2.stream().forEach { x ->
+			println("데이터:${x.value1()}")
+		}
+		val data3=dslContext.select(USERS.AGE,count().`as`("userCount")).from(USERS)
+			.groupBy(USERS.AGE)
+			.orderBy(USERS.AGE.desc())
+			.fetchInto(UserCount::class.java)
+		data3.stream().forEach { x-> println("나이:${x.age}-카운트:${x.userCount}")}
+
+
+		//from절 서브쿼리
+		val subQuery=dslContext.select(USERS.AGE).from(USERS)
+			.where(USERS.AGE.gt(12))
+			.asTable("subQuery")
+
+		val data4=dslContext.select(subQuery.field(USERS.AGE)).from(subQuery)
+			.where(subQuery.field(USERS.AGE)!!.gt(10))
+			.fetch()
+
+		data4.stream().forEach { x-> println("나이데이터:${x.value1()}") }
+
+		//union test
+
+		val unionQuery1=dslContext.select(USERS.ID).from(USERS);
+
+		val unionQuery2=dslContext.select(USERINFO.USERID).from(USERINFO)
+
+		val result=unionQuery1
+			.union(unionQuery2)
+			.fetch()
+		result.stream().forEach { x-> println("유니온 데이터:${x.value1()}") }
+
+
+
+		//join test
+		val data5=dslContext.select(USERS.USERNAME,USERINFO.SEX,USERS.ID).from(USERS)
+			.innerJoin(USERINFO)
+			.on(USERINFO.USERID.eq(USERS.ID))
+			.fetchInto(UserData::class.java)
+
+		data5.stream().forEach { x-> println("유저정보:${x.sex}-${x.username}-${x.id}") }
+
+
 	}
+
+
+	@Test
+	fun testDynamicQuery(){
+		val result=dslContext.select(USERS).from(USERS)
+			.where(nameQuery("황동근"))
+			.fetch()
+		println("결과:${result.size}")
+
+	}
+	fun nameQuery(username:String?):Condition?{
+		return USERS.USERNAME.equal(username)
+	}
+
+
 
 }

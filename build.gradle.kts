@@ -78,6 +78,9 @@ dependencies {
 	implementation("com.rabbitmq:stream-client:0.15.0")
 	implementation("org.springframework.amqp:spring-rabbit-stream:3.0.0")
 	implementation("io.projectreactor.netty:reactor-netty")
+	//implementation ("org.flywaydb:flyway-core")
+	runtimeOnly ("com.h2database:h2")
+
 }
 
 kotlin {
