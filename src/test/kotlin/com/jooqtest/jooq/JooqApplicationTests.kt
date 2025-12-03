@@ -113,8 +113,6 @@ class JooqApplicationTests {
 			.fetch()
 		result.stream().forEach { x-> println("유니온 데이터:${x.value1()}") }
 
-
-
 		//join test
 		val data5=dslContext.select(USERS.USERNAME,USERINFO.SEX,USERS.ID).from(USERS)
 			.innerJoin(USERINFO)
@@ -123,7 +121,18 @@ class JooqApplicationTests {
 
 		data5.stream().forEach { x-> println("유저정보:${x.sex}-${x.username}-${x.id}") }
 
+		//from 절 서브쿼리 테스트 2
+		val subQuery2=dslContext.select(USERS.AGE,USERINFO.USERID).from(USERS)
+			.innerJoin(USERINFO)
+			.on(USERINFO.USERID.eq(USERS.ID))
+			.where(USERS.AGE.gt(12))
+			.asTable("subQuery")
 
+		val data6=dslContext.select(subQuery.field(USERINFO.USERID)).from(subQuery)
+			.where(subQuery.field(USERS.AGE)!!.gt(10))
+			.fetch()
+
+		data6.stream().forEach { x-> println("나이데이터:${x.value1()}") }
 	}
 
 
