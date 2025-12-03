@@ -21,3 +21,7 @@ rabbitmq를 외부브로커로 사용: 기존의 인메모리 브로커가아니
 해당 포트로 연결이되면 simpmessagetemplate로 구독경로로 보낼시 자동으로 해당 큐를타고 구독한 클라이언트에게 메시지를 뿌린다.
 rabbittemplate(일반 rabbit port하고 연결한)로 메시지를 보내도 알아서 큐를 찾은후 해당 큐에대해서 subcribe가 된애들이 있으면 그쪽으로
 메시지를 알아서 뿌린다.
+
+
+flywat랑 h2 db jooq 테스트 환경구성
+
