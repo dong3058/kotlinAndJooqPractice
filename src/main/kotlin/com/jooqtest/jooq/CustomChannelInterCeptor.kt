@@ -24,6 +24,17 @@ class CustomChannelInterCeptor :ChannelInterceptor{
             println("헤더 설정 완료")
             return MessageBuilder.createMessage(message.payload,accessor.messageHeaders)
         }
+
+        if(command==StompCommand.SUBSCRIBE&&accessor.destination!!.startsWith("/topic")){
+            println(accessor.destination)
+            accessor.setNativeHeader("x-message-ttl","10000")//이거는 argumetns라는 속성 지정시 이렇게 넣어주자.
+           /*accessor.setNativeHeader("durable", "false")
+            accessor.setNativeHeader("exclusive", "false")
+            accessor.setNativeHeader("auto-delete", "true");
+            return MessageBuilder.createMessage(message.payload,accessor.messageHeaders)*/
+            return MessageBuilder.createMessage(message.payload,accessor.messageHeaders);
+            //이렇게 구독 하는 단계에서 생성되는 큐의 속성값을 조절할수있는대 이거 쓸일이 잇긴할까.,.?
+        }
         return message
     }
 }

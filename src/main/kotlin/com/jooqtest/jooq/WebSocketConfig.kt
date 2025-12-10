@@ -40,7 +40,7 @@ class WebSocketConfig(private val channelInterceptor:CustomChannelInterCeptor
     }
 
     override fun configureMessageBroker(registry: MessageBrokerRegistry) {
-        registry.enableStompBrokerRelay("/queue")
+        registry.enableStompBrokerRelay("/queue","/topic")
             .setRelayHost(HOSTNAME)
             .setRelayPort(61613)
             //.setSystemHeartbeatSendInterval()
