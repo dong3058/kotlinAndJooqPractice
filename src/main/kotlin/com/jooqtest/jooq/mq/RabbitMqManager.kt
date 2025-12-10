@@ -10,7 +10,7 @@ import org.springframework.amqp.rabbit.core.RabbitAdmin
 import org.springframework.stereotype.Service
 
 
-@Service
+//@Service
 class RabbitMqManager(private val rabbitAdmin: RabbitAdmin) {
 
 

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 
 
-@RestController
+//@RestController
 class TestController(private val rabbitMqStreamService: RabbitMqStreamService,private val rabbitMqManager: RabbitMqManager,
     private val rabbitMqConsumerManager: RabbitMqConsumerManager) {
     @GetMapping("/delete/{name}")

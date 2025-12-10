@@ -18,7 +18,7 @@ import org.springframework.retry.support.RetryTemplateBuilder
 import redis.clients.authentication.core.TokenManagerConfig
 
 
-@Configuration
+//@Configuration
 class RabbitMqConfig(private val customListener: CustomListener) {
 
 
@@ -38,6 +38,7 @@ class RabbitMqConfig(private val customListener: CustomListener) {
         val connectionFactory = CachingConnectionFactory(HOSTNAME, PORT)
         connectionFactory.username = USERNAME
         connectionFactory.setRequestedHeartBeat(30)
+        // 이거는 일반 rabbitmq 포트와 연결하는 spring 의 tcp connection간의 heartbeat를 조절함.
         connectionFactory.setConnectionLimit(5000)
         //아래 2개의 설정은 각각 confirm 하고 returns 콜백의 활성화 여부를 결정하는 옵션.
         connectionFactory.setPublisherConfirmType(CachingConnectionFactory.ConfirmType.CORRELATED)

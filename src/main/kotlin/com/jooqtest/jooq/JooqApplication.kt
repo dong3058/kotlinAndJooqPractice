@@ -15,7 +15,7 @@ fun main(args: Array<String>) {
 	runApplication<JooqApplication>(*args)
 }
 
-@Service
+//@Service
 class RabbitMqStreamService(private val environment: Environment, private val objectMapper: ObjectMapper) {
 
     private val producerHashMap= ConcurrentHashMap<String, Producer>();

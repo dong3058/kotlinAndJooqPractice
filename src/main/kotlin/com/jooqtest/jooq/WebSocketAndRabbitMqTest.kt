@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 
 
-@Controller
+//@Controller
 class WebSocketAndRabbitMqTest(private val rabbitMqStreamService: RabbitMqStreamService
 ,private val rabbitTemplate: RabbitTemplate,private val simpMessageTemplate: SimpMessagingTemplate) {
 
@@ -35,10 +35,10 @@ class WebSocketAndRabbitMqTest(private val rabbitMqStreamService: RabbitMqStream
     @MessageMapping("/sending")
     fun testingSendMsg(@Payload testMsgClass: TestMsgClass){
 
-            //simpMessageTemplate.convertAndSend("/queue/testQueue",testMsgClass);
-            rabbitTemplate.convertAndSend("testExchange", "", testMsgClass){
+            simpMessageTemplate.convertAndSend("/queue/testQueue",testMsgClass);
+           /* rabbitTemplate.convertAndSend("testExchange", "", testMsgClass){
                 throw RuntimeException("테스트용 강제 에러 발생!")
-            }
+            }*/
 
     }
 

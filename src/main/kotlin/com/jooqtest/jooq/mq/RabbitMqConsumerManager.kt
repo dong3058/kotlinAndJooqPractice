@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service
 import java.util.concurrent.ConcurrentHashMap
 
 
-@Service
+//@Service
 class RabbitMqConsumerManager(private val customRecover: CustomRecover,@Qualifier("consumerConnectionFactory" )private val connectionFactory: ConnectionFactory,private val rabbitMqManager: RabbitMqManager,private val simpMessagingTemplate:SimpMessagingTemplate
 ,private val objectMapper:ObjectMapper) {
 
