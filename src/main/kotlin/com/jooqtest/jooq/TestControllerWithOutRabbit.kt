@@ -25,8 +25,15 @@ class TestControllerWithOutRabbit(private val simpMessageTemplate: SimpMessaging
     @MessageMapping("/topic")
     fun topicSendingMsg(@Payload testMsgClass: TestMsgClass){
         //argumetns를 custom했다면 따로 header를 넣어줄 필요가ㅇ없다. 아래 예시같은 케이스를 말하는것.
+        //단 큐타입 같은경우 아래 stream처럼 기존의 stomp 경로 topic,queue에서 벗어난 타입을 넣은경우  헤더에다가 값 넣어줘야됨.
         //name    durable auto_delete     exclusive       arguments       consumers
         //stomp-subscription-GrA2pmBV-Mih8ZAFWBfz1A       false   true    false   [{"x-message-ttl",10000},{"x-queue-type","classic"}]    1
         simpMessageTemplate.convertAndSend("/topic/topicQueue",testMsgClass);
+    }
+    @MessageMapping("/stream")
+    fun streamQueueSendingMsg(@Payload testMsgClass: TestMsgClass){
+        //구독 단계에서 인터셉터에서 stream으로 만든경우에는 이렇게 넣어줘야된다. 즉 stream속성에 대해서는 argumetns여도 넣어줘여됨.
+        val header= mapOf("x-queue-type" to "stream")
+        simpMessageTemplate.convertAndSend("/queue/streamQueue",testMsgClass,header);
     }
 }

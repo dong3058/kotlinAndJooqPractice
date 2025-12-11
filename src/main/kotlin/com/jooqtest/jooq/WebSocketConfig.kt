@@ -2,12 +2,17 @@ package com.jooqtest.jooq
 
 
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.messaging.simp.config.ChannelRegistration
 import org.springframework.messaging.simp.config.MessageBrokerRegistry
+import org.springframework.scheduling.TaskScheduler
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer
+import java.util.concurrent.Executors
 
 @Configuration
 @EnableWebSocketMessageBroker
@@ -38,14 +43,22 @@ class WebSocketConfig(private val channelInterceptor:CustomChannelInterCeptor
         //이렇게하면 heartbeat를 처리하는(client->spring->rabbitmq) 스레드를 정의할필요없다. 왜냐면 spring은
         //그냥 중계기이기떄문.
     }
+    @Bean
+    fun systemHeartBeatThread(): TaskScheduler {
+        val scheduler = ThreadPoolTaskScheduler()
+        scheduler.setThreadNamePrefix("spring-rabbitmq-heartbeat-")
+        scheduler.poolSize = 1
+        scheduler.initialize()
+        return scheduler
+    }
 
     override fun configureMessageBroker(registry: MessageBrokerRegistry) {
         registry.enableStompBrokerRelay("/queue","/topic")
             .setRelayHost(HOSTNAME)
             .setRelayPort(61613)
-            //.setSystemHeartbeatSendInterval()
-            //.setSystemHeartbeatReceiveInterval(\)
-            //.setTaskScheduler()
+            .setSystemHeartbeatSendInterval(20000)
+            .setSystemHeartbeatReceiveInterval(20000)
+            .setTaskScheduler(systemHeartBeatThread())
             .setClientLogin(USERNAME)
             .setClientPasscode(PASSWORD);
         registry.setApplicationDestinationPrefixes("/app")

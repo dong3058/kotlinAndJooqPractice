@@ -84,7 +84,7 @@ class JooqApplicationTests {
 		data2.stream().forEach { x ->
 			println("데이터:${x.value1()}")
 		}
-		val data3=dslContext.select(USERS.AGE,count().`as`("userCount")).from(USERS)
+		val data3=dslContext.select(count().`as`("userCount"),USERS.AGE).from(USERS)
 			.groupBy(USERS.AGE)
 			.orderBy(USERS.AGE.desc())
 			.fetchInto(UserCount::class.java)
@@ -104,13 +104,14 @@ class JooqApplicationTests {
 
 		//union test
 
-		val unionQuery1=dslContext.select(USERS.ID).from(USERS);
-
+		val unionQuery1=dslContext.select(USERS.ID).from(USERS)
 		val unionQuery2=dslContext.select(USERINFO.USERID).from(USERINFO)
 
-		val result=unionQuery1
+		val unionSubQuery=unionQuery1
 			.union(unionQuery2)
-			.fetch()
+			.asTable("unionSubQuery")
+		//유니온 서브 쿼리에서 FIELD 0은  유니온시 가져온느 데이터를 순서대로 몇번인지를 포함. 0번부터 시작.
+		val result=dslContext.select(unionSubQuery.field(0)).from(unionSubQuery).fetch()
 		result.stream().forEach { x-> println("유니온 데이터:${x.value1()}") }
 
 		//join test
@@ -126,20 +127,36 @@ class JooqApplicationTests {
 			.innerJoin(USERINFO)
 			.on(USERINFO.USERID.eq(USERS.ID))
 			.where(USERS.AGE.gt(12))
-			.asTable("subQuery")
+			.asTable("subQuery2")
 
-		val data6=dslContext.select(subQuery.field(USERINFO.USERID)).from(subQuery)
-			.where(subQuery.field(USERS.AGE)!!.gt(10))
+		val data6=dslContext.select(subQuery2.field(USERINFO.USERID)).from(subQuery2)
+			.where(subQuery2.field(USERS.AGE)!!.gt(10))
 			.fetch()
 
 		data6.stream().forEach { x-> println("나이데이터:${x.value1()}") }
+
+		//CTE  테스트
+		//서브쿼리와 cte간의 차이라면 cte는 미리 구해놔서 메모리에 적재해두고 재사용하는거고
+		//서브 쿼리는 쿼리문 진행하면서 그떄그때 구해서 사용하는것.
+		//복잡한 케이스가 아니라면 서브쿼리를, 복잡하거나 재귀를 써야된다면 cte로 쿼리문이 점차 깊어지는걸 방지하자.
+		val cte=name("cte").`as`(dslContext.select(USERS.AGE,USERINFO.USERID).from(USERS)
+			.innerJoin(USERINFO)
+			.on(USERINFO.USERID.eq(USERS.ID))
+			.where(USERS.AGE.gt(12)))
+
+		val data7=dslContext.with(cte)
+			.select(cte.field(USERINFO.USERID))
+				 .from(cte)
+				 .where(cte.field(USERS.AGE)!!.gt(10))
+				 .fetch()
+		data7.stream().forEach { x-> println("나이데이터:${x.value1()}") }
 	}
 
 
 	@Test
 	fun testDynamicQuery(){
 		val result=dslContext.select(USERS).from(USERS)
-			.where(nameQuery("황동근"))
+			.where(nameQuery(null))
 			.fetch()
 		println("결과:${result.size}")
 

@@ -1,6 +1,7 @@
 package com.jooqtest.jooq
 
 import com.jooqtest.jooq.mq.MasterOrder
+import com.jooqtest.jooq.stream.RabbitMqStreamService
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload

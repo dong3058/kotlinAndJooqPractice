@@ -27,3 +27,8 @@ spring:
       port: 5552  # Stream 포트
       username: guest
       password: guest
+
+logging:
+  level:
+    org.springframework.messaging.simp.config: DEBUG
+    org.springframework.messaging.simp.broker: DEBUG

@@ -3,6 +3,7 @@ package com.jooqtest.jooq
 import com.jooqtest.jooq.mq.RabbitMqConfig
 import com.jooqtest.jooq.mq.RabbitMqConsumerManager
 import com.jooqtest.jooq.mq.RabbitMqManager
+import com.jooqtest.jooq.stream.RabbitMqStreamService
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
