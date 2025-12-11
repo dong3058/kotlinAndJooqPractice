@@ -22,6 +22,36 @@ rabbitmq를 외부브로커로 사용: 기존의 인메모리 브로커가아니
 rabbittemplate(일반 rabbit port하고 연결한)로 메시지를 보내도 알아서 큐를 찾은후 해당 큐에대해서 subcribe가 된애들이 있으면 그쪽으로
 메시지를 알아서 뿌린다.
 
+rabbitmq를 외부 브로커로 사용시에 subscribe 진행 spring-rabbit mq stomp사이의 tcp 커낵션을 이용해서 큐에연결된 실제 consumer가 형성이된다.
+
+엄밀하게 말하면 rabbitmq를 외부 브로커로 사용시에 rabbit mq stomp하고 tcp 커낵션을 만들어내는것이다
+저수준의 제어가 필요할떄 만드는 rabbitmqtemplaste을 위한 mq의 일반포트 연결도 tcp 커낵션을 만드는것.
+즉 저 2개를 사용하면 rabbitmq과 tcp연결이 2개가 성립된다는것.
+하트 비트 설정같은건 코드를 참조바람.
+
+
+rabbit mq 외부브로커 사용시 queue 생성:
+구독 경로에 따라서 queue 와 topic은 차이를 보인다.
+/queue/{큐이름}
+방식으로 구독을 할경우 큐이름으로 큐를 생성하는대 기본값으로 
+name    durable auto_delete     exclusive       arguments       consumers
+testQueue       true    false   false   [{"x-queue-type","classic"}]    0
+다음과 같이 존재하게 된다.
+
+해당 큐는 메시지를 보내도 선점한 consumer만이 메시지를 받는다. 즉 한큐에 여려명의 consumer가있어도 1명만 받는다 이소리(애초에이게 기본 방식이다.)
+
+/topic/{큐이름}
+애 같은경우 기본 exchnge로 존재하는 amg.topic(topic타입의 exchange)와 연결되는 사용자만의 임시 큐를 만들어준다.
+topic타입의 exchange는 해당 exchnge로 들어온 모든 메시지를 해당 exchange가 가진 topic 키와 연결된 모든 큐로 메시지를 뿌려준다.
+즉 각 사용자별로 개인화된 경로를 만들어주는것. 생성시 기본 속성은
+
+name    durable auto_delete     exclusive       arguments       consumers
+stomp-subscription-OOqPIbwAUe-hQJsAv8ZmOA       false   true    false   [{"x-queue-type","classic"}]    1
+stomp-subscription-UwGVoz-tAfpRj34h3glyqA       false   true    false   [{"x-queue-type","classic"}]    1
+이런꼴이다. auto delete가 있는만큼 연결끊키면 바로 사라지는 큐이다.
+
+
+참고로 생성되는 모든큐는 기본 exchange인 ""와 연결된다. 알아두자.
 
 flywat랑 h2 db jooq 테스트 환경구성
 
