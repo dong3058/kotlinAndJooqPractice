@@ -22,7 +22,9 @@ class CustomChannelInterCeptor :ChannelInterceptor{
             value=accessor.getNativeHeader("heart-beat")
             println(value)
             println("헤더 설정 완료")
-            return MessageBuilder.createMessage(message.payload,accessor.messageHeaders)
+            //rabbitmq하고 heartbeat 협상과정인대 내가쓴 websocket 툴은 협상과정을 조절할수없어서 여기서 들어온 메시지의 heartbeat를조절.
+            return MessageBuilder.createMessage(message.payload,accessor.messageHeaders);
+
         }
 
         if(command==StompCommand.SUBSCRIBE&&accessor.destination!!.startsWith("/topic")){

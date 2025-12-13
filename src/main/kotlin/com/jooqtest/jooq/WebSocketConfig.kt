@@ -53,7 +53,7 @@ class WebSocketConfig(private val channelInterceptor:CustomChannelInterCeptor
     }
 
     override fun configureMessageBroker(registry: MessageBrokerRegistry) {
-        registry.enableStompBrokerRelay("/queue","/topic")
+        registry.enableStompBrokerRelay("/queue","/topic","/user")
             .setRelayHost(HOSTNAME)
             .setRelayPort(61613)
             .setSystemHeartbeatSendInterval(20000)
@@ -62,6 +62,7 @@ class WebSocketConfig(private val channelInterceptor:CustomChannelInterCeptor
             .setClientLogin(USERNAME)
             .setClientPasscode(PASSWORD);
         registry.setApplicationDestinationPrefixes("/app")
+        registry.setUserDestinationPrefix("/user")
 
         //val properties= mapOf("x-message-ttl" to 300000,"x-single-active-consumer" to true)
         //참고사항으로 rabbit mq를 외부 메시지 브로커로 사용해서 구독시에 만약 해당 큐가 이미 존재가고 저런 위의 properties
