@@ -1,5 +1,6 @@
 package com.jooqtest.jooq
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.messaging.simp.SimpMessagingTemplate
@@ -7,11 +8,20 @@ import org.springframework.retry.annotation.Backoff
 import org.springframework.retry.annotation.Recover
 import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.GetMapping
 
 
 @Controller
-class TestControllerWithOutRabbit(private val simpMessageTemplate: SimpMessagingTemplate) {
+class TestControllerWithOutRabbit(private val simpMessageTemplate: SimpMessagingTemplate,private val rabbitTemplate: RabbitTemplate) {
 
+
+
+    @GetMapping("/test/send")
+    fun testing(){
+        rabbitTemplate.convertAndSend("testQueue","hello")
+        //이거는 개인 메시지 큐에 해당되는 곳에 적재된 메시지르 나중에 읽을수있는가를 테스트하는건대 결론은 된다.
+        //안읽은 메시지를 전송하는건 mq로 처리하면될듯.
+    }
 
 
     @Retryable(maxAttempts = 2, recover = "recoverByDlx", backoff= Backoff(delay = 1000))

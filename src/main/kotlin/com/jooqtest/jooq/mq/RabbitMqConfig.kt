@@ -18,7 +18,7 @@ import org.springframework.retry.support.RetryTemplateBuilder
 import redis.clients.authentication.core.TokenManagerConfig
 
 
-//@Configuration
+@Configuration
 class RabbitMqConfig(private val customListener: CustomListener) {
 
 
