@@ -6,6 +6,9 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.messaging.simp.SimpMessagingTemplate
+import org.springframework.retry.annotation.Backoff
+import org.springframework.retry.annotation.Recover
+import org.springframework.retry.annotation.Retryable
 import org.springframework.retry.support.RetryTemplate
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
@@ -33,15 +36,18 @@ class WebSocketAndRabbitMqTest(private val rabbitMqStreamService: RabbitMqStream
         rabbitTemplate.convertAndSend("nonExistExchange","",testMsgClass)
     }
 
+
+
     @MessageMapping("/sending")
     fun testingSendMsg(@Payload testMsgClass: TestMsgClass){
+
 
             simpMessageTemplate.convertAndSend("/queue/testQueue",testMsgClass);
            /* rabbitTemplate.convertAndSend("testExchange", "", testMsgClass){
                 throw RuntimeException("테스트용 강제 에러 발생!")
             }*/
-
     }
+
 
     fun testingRetryTemplate(){
         val testMsgClass=TestMsgClass("hello world")

@@ -3,15 +3,23 @@ package com.jooqtest.jooq
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.messaging.simp.SimpMessagingTemplate
+import org.springframework.retry.annotation.Backoff
+import org.springframework.retry.annotation.Recover
+import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Controller
 
 
 @Controller
 class TestControllerWithOutRabbit(private val simpMessageTemplate: SimpMessagingTemplate) {
 
+
+
+    @Retryable(maxAttempts = 2, recover = "recoverByDlx", backoff= Backoff(delay = 1000))
     @MessageMapping("/sending")
     fun testingSendMsg(@Payload testMsgClass: TestMsgClass){
 
+
+        throw RuntimeException("hello world")
         /*
         * val header=map.of(~~)
         * 해서 해더값에다가 큐의 속성을 넣고 convberanjdsend에 넣으면 해당되눈 속성의 큐를 찾는대 솔직히 할필요가있나..?
@@ -35,5 +43,12 @@ class TestControllerWithOutRabbit(private val simpMessageTemplate: SimpMessaging
         //구독 단계에서 인터셉터에서 stream으로 만든경우에는 이렇게 넣어줘야된다. 즉 stream속성에 대해서는 argumetns여도 넣어줘여됨.
         val header= mapOf("x-queue-type" to "stream")
         simpMessageTemplate.convertAndSend("/queue/streamQueue",testMsgClass,header);
+    }
+
+
+    @Recover
+    fun recoverByDlx(e:Exception,testMsgClass: TestMsgClass){
+        println("리커버 실행-에러 원인 ${e.message}")
+        simpMessageTemplate.convertAndSend("/queue/errorQueue",testMsgClass)
     }
 }

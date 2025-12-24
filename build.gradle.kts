@@ -85,6 +85,9 @@ dependencies {
 	//implementation ("org.flywaydb:flyway-core")
 	runtimeOnly ("com.h2database:h2")
 
+	implementation("org.springframework.retry:spring-retry")
+	implementation ("org.springframework.boot:spring-boot-starter-aop")
+
 }
 
 kotlin {

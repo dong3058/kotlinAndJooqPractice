@@ -1,5 +1,6 @@
 package com.jooqtest.jooq
 
+import com.jooqtest.jooq.tables.references.MESSAGES
 import com.jooqtest.jooq.tables.references.USERINFO
 import com.jooqtest.jooq.tables.references.USERS
 import com.jooqtest.jooq.testDto.UserCount
@@ -7,6 +8,7 @@ import com.jooqtest.jooq.testDto.UserData
 import com.jooqtest.jooq.testDto.UserDto
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.Query
 import org.jooq.impl.DSL.*
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -24,7 +26,7 @@ class JooqApplicationTests {
 	lateinit var dslContext:DSLContext;
 
 
-	//@BeforeEach
+	@BeforeEach
 	fun setting(){
 		val query=dslContext.insertInto(USERS)
 			.set(USERS.AGE,12)
@@ -45,7 +47,7 @@ class JooqApplicationTests {
 		dslContext.batch(query3,query4).execute();
 	}
 
-	//@AfterEach
+	@AfterEach
 	fun clearAfterTest(){
 		dslContext.deleteFrom(USERINFO).execute();
 		dslContext.deleteFrom(USERS).execute();
@@ -163,6 +165,30 @@ class JooqApplicationTests {
 	}
 	fun nameQuery(username:String?):Condition?{
 		return USERS.USERNAME.equal(username)
+	}
+
+	@Test
+	fun settingData(){
+
+		val batchList: MutableList<Query> = mutableListOf()
+		for(i in 1..20){
+			if(i%2==0){
+				val value:Long=2;
+				val query=dslContext.insertInto(MESSAGES)
+					.set(MESSAGES.ROOM_ID,value)
+					.set(MESSAGES.MESSAGE,"hello")
+
+				batchList.add(query)
+			}
+			else{
+				val value:Long=1;
+				val query=dslContext.insertInto(MESSAGES)
+					.set(MESSAGES.ROOM_ID,value)
+					.set(MESSAGES.MESSAGE,"hello")
+				batchList.add(query)
+			}
+		}
+		dslContext.batch(batchList).execute();
 	}
 
 
